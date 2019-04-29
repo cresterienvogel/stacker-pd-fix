@@ -106,7 +106,6 @@ function TOOL:LeftClick(trace)
 
 			NewEnt:SetHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
 			NewEnt:SetMaxHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
-			NewEnt:SetNWString("prop_mat", NewEnt:GetMaterial())
 
 			if Freeze then
 				ply:AddFrozenPhysicsObject(NewEnt, NewEnt:GetPhysicsObject()) //Fix so you can mass-unfreeze
