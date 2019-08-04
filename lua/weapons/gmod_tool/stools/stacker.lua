@@ -103,10 +103,38 @@ function TOOL:LeftClick(trace)
 			NewEnt:SetPos(NewVec)
 			NewEnt:SetAngles(NewAng)
 			NewEnt:Spawn()
-
-			NewEnt:SetHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
+			
 			NewEnt:SetMaxHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
 
+			if GetConVar("props_recovering"):GetBool() then
+				NewEnt:SetHealth(1)
+				NewEnt:SetNWBool("prop_recovering", true)
+
+				timer.Create("PropRecovery" .. NewEnt:EntIndex(), 1, 0, function()
+				    if not IsValid(NewEnt) then
+					timer.Remove("PropRecovery" .. NewEnt:EntIndex())
+					return 
+				    end
+
+				    if not NewEnt:GetNWBool("prop_recovering") then
+					return 
+				    end
+
+				    if NewEnt:Health() >= NewEnt:GetMaxHealth() then
+					NewEnt:SetNWBool("prop_recovering", false)
+					return
+				    end            
+
+				    if NewEnt:Health() > NewEnt:GetMaxHealth() / 2 then
+					NewEnt:SetNWBool("prop_cracked", false)
+				    end
+
+				    NewEnt:SetHealth(NewEnt:Health() + 1)
+				end)
+		    	else
+				NewEnt:SetHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
+		    	end
+	
 			if Freeze then
 				ply:AddFrozenPhysicsObject(NewEnt, NewEnt:GetPhysicsObject()) //Fix so you can mass-unfreeze
 				NewEnt:GetPhysicsObject():EnableMotion(false)
