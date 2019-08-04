@@ -1,4 +1,4 @@
---fixed to work fine on Prop Destruction by crester
+-- Fixed to work fine on Prop Destruction by crester
 
 TOOL.Category		= "Construction"
 TOOL.Name			= "#Tool.stacker.name"
@@ -27,7 +27,7 @@ if SERVER then
 	util.AddNetworkString("UnstackGhost")
 end
 
-if ( CLIENT ) then
+if CLIENT then
 	language.Add( "Tool.stacker.name", "Stacker" )
 	language.Add( "Tool.stacker.desc", "Stacks Props Easily" )
 	language.Add( "Tool.stacker.0", "Click To Stack The Prop You're Pointing At." )
@@ -36,10 +36,6 @@ end
 
 function TOOL:Holster()
 	self:ReleaseGhostStack()
-end
-
-function TOOL:Deploy()
-//	self.StackedEnts = {}
 end
 
 function TOOL:LeftClick(trace)
@@ -69,7 +65,6 @@ function TOOL:LeftClick(trace)
 	local NewAng = Ent:GetAngles()
 	local LastEnt = Ent
 
-	//SimpleAdmin:Broadcast("COUNT IS " .. Count)
 	if Count <= 0 then return false end
 	
 	undo.Create("stacker")
@@ -84,63 +79,53 @@ function TOOL:LeftClick(trace)
 		NewAng = NewAng + Rot
 
 		if !Ent:IsInWorld() then
-			return false //Who put just break here? Seriously? Giving the player no hint he/she's not supposed to do that?
+			return false
 		end
 
-	//	local EntList = ents.FindInSphere(NewVec, .2) //Searching in a sphere and find props
-	//	local PropValid = true						//Flag if prop is found or not
-	//	for k, v in pairs(EntList) do				//For loop
-	//		if (v:IsValid() && v:GetClass() == "prop_physics" && (v == LastEnt )) then//|| v:GetPos() == NewVec)) then
-	//			if (self:IsInGhostStack(v)) then continue end
-	//			PropValid = false
-	//		end
-	//	end
-	//	if !PropValid then return false end
-
 		NewEnt = ents.Create("prop_physics")
-			NewEnt:SetModel(Ent:GetModel())
-			NewEnt:SetColor(Ent:GetColor())
-			NewEnt:SetPos(NewVec)
-			NewEnt:SetAngles(NewAng)
-			NewEnt:Spawn()
-			
-			NewEnt:SetMaxHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
+		NewEnt:SetModel(Ent:GetModel())
+		NewEnt:SetColor(Ent:GetColor())
+		NewEnt:SetPos(NewVec)
+		NewEnt:SetAngles(NewAng)
+		NewEnt:Spawn()
+		
+		NewEnt:SetMaxHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
 
-			if GetConVar("props_recovering"):GetBool() then
-				NewEnt:SetHealth(1)
-				NewEnt:SetNWBool("prop_recovering", true)
+		if GetConVar("props_recovering"):GetBool() then
+			NewEnt:SetHealth(1)
+			NewEnt:SetNWBool("prop_recovering", true)
 
-				timer.Create("PropRecovery" .. NewEnt:EntIndex(), 1, 0, function()
-				    if not IsValid(NewEnt) then
+			timer.Create("PropRecovery" .. NewEnt:EntIndex(), 1, 0, function()
+				if not IsValid(NewEnt) then
 					timer.Remove("PropRecovery" .. NewEnt:EntIndex())
 					return 
-				    end
+				end
 
-				    if not NewEnt:GetNWBool("prop_recovering") then
+				if not NewEnt:GetNWBool("prop_recovering") then
 					return 
-				    end
+				end
 
-				    if NewEnt:Health() >= NewEnt:GetMaxHealth() then
+				if NewEnt:Health() >= NewEnt:GetMaxHealth() then
 					NewEnt:SetNWBool("prop_recovering", false)
 					return
-				    end            
+				end            
 
-				    if NewEnt:Health() > NewEnt:GetMaxHealth() / 2 then
+				if NewEnt:Health() > NewEnt:GetMaxHealth() / 2 then
 					NewEnt:SetNWBool("prop_cracked", false)
-				    end
+				end
 
-				    NewEnt:SetHealth(NewEnt:Health() + 1)
-				end)
-		    	else
-				NewEnt:SetHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
-		    	end
+				NewEnt:SetHealth(NewEnt:Health() + 1)
+			end)
+		else
+			NewEnt:SetHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
+		end
 	
-			if Freeze then
-				ply:AddFrozenPhysicsObject(NewEnt, NewEnt:GetPhysicsObject()) //Fix so you can mass-unfreeze
-				NewEnt:GetPhysicsObject():EnableMotion(false)
-			else
-				NewEnt:GetPhysicsObject():Wake()
-			end
+		if Freeze then
+			ply:AddFrozenPhysicsObject(NewEnt, NewEnt:GetPhysicsObject())
+			NewEnt:GetPhysicsObject():EnableMotion(false)
+		else
+			NewEnt:GetPhysicsObject():Wake()
+		end
 
 		if Weld then
 			local WeldEnt = constraint.Weld( LastEnt, NewEnt, 0, 0, 0 )
@@ -161,7 +146,6 @@ function TOOL:LeftClick(trace)
 			PropDefender.Player.Give(ply, NewEnt, false)
 		end
 
-		//table.insert(self.StackedEnts, NewEnt)
 	end
 	undo.SetPlayer(ply)
 	undo.Finish()
@@ -181,7 +165,7 @@ function TOOL:StackerCalcPos(lastent, mode, dir, offset)
 	local stackdir = Vector(0,0,1)
 	local height = math.abs(upper.z - lower.z)
 
-	if mode == 1 then // Relative to world
+	if mode == 1 then
 		if dir == 1 then
 			stackdir = forward:Up()
 			height = math.abs(upper.z - lower.z)
@@ -201,7 +185,7 @@ function TOOL:StackerCalcPos(lastent, mode, dir, offset)
 			stackdir = forward:Right() * -1
 			height = math.abs(upper.y - lower.y)
 		end
-	elseif mode == 2 then // Relative to prop
+	elseif mode == 2 then
 		forward = ang
 		if dir == 1 then
 			stackdir = forward:Up()
@@ -228,7 +212,7 @@ function TOOL:StackerCalcPos(lastent, mode, dir, offset)
 			offset = forward:Right() * -1 * offset.X + forward:Up() * offset.Z + forward:Forward() * offset.Y
 			height = math.abs(gupper.y - glower.y)
 		end
-	end //offset = (stackdir:Angle():Up() * offset.Z) + (stackdir:Angle():Forward() * offset.X) + (stackdir:Angle():Right() * offset.Y)
+	end 
 	
 	return stackdir, height, offset
 end
@@ -354,15 +338,14 @@ function TOOL:UpdateGhostStack(ent)
 		v:SetPos(NewVec)
 		v:SetNoDraw(false)
 		NewEnt = v
-		//SimpleAdmin:Broadcast(k .. ": " .. tostring(NewAng) .. " : " .. tostring(NewVec) .. " : " .. tostring(v) .. ".")
 	end
 end
 
-function TOOL:CheckGhostStack() //Returns if stack is ok
+function TOOL:CheckGhostStack()
 	if !self.GhostStack then return false end
 	local count = self:GetClientNumber("count")
 	for k,v in pairs(self.GhostStack) do
-		if (!v || !v:IsValid()) then //if something in the table doesn't exist or it's a null entity tell em it's not ok
+		if (!v || !v:IsValid()) then
 			return false
 		end
 	end
@@ -454,26 +437,21 @@ function TOOL:Think()
 	if (IsValid(trace.Entity) && trace.Hit && trace.Entity:GetClass() == "prop_physics") then
 		self.NewEnt = trace.Entity
 		if (self.NewEnt:IsValid() && self.NewEnt != self.LastEnt) then
-			//SimpleAdmin:Broadcast("Creating new stack.")
 			stacked = self:CreateGhostStack(self.NewEnt:GetModel(), Vector(0,0,0), Angle(0,0,0))
 			if stacked then self.LastEnt = self.NewEnt end
 		end
 		if (!self:CheckGhostStack()) then
-			//SimpleAdmin:Broadcast("Releasing old stack.")
 			self:ReleaseGhostStack()
 			self.LastEnt = nil
 		end
 	elseif ((IsValid(trace.Entity) && trace.Entity:GetClass() != "prop_physics" && self.LastEnt != nil) || !IsValid(trace.Entity)) then
-		//SimpleAdmin:Broadcast("Releasing old stack.")
 		self:ReleaseGhostStack()
 		self.LastEnt = nil
 	end
 	if (self.LastEnt != nil && self.LastEnt:IsValid()) then
-		//SimpleAdmin:Broadcast("Updating old stack.")
 		self:UpdateGhostStack(self.LastEnt)
 	end
 	if CLIENT then
-		//MsgN(tostring(table.Count(self.GhostStack)) .. " : " .. tostring(table.Count(self)))
 		if (!GhostStack || table.Count(GhostStack) <= 0) then return end
 		for k, v in pairs(GhostStack) do
 			halo.Add({v}, Color(181, 0, 217))
