@@ -92,32 +92,36 @@ function TOOL:LeftClick(trace)
 		NewEnt:SetMaxHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
 
 		if GetConVar("props_recovering"):GetBool() then
-			NewEnt:SetHealth(1)
-			NewEnt:SetNWBool("prop_recovering", true)
+			if GetConVar("props_lowspawn"):GetBool() then
+				NewEnt:SetHealth(1)
+				NewEnt:SetNWBool("prop_recovering", true)
 
-			timer.Create("PropRecovery" .. NewEnt:EntIndex(), 1, 0, function()
-				if not IsValid(NewEnt) then
-					timer.Remove("PropRecovery" .. NewEnt:EntIndex())
-					return 
-				end
+				timer.Create("PropRecovery" .. NewEnt:EntIndex(), 1, 0, function()
+					if not IsValid(NewEnt) then
+						timer.Remove("PropRecovery" .. NewEnt:EntIndex())
+						return 
+					end
 
-				if not NewEnt:GetNWBool("prop_recovering") then
-					return 
-				end
+					if not NewEnt:GetNWBool("prop_recovering") then
+						return 
+					end
 
-				if NewEnt:Health() >= NewEnt:GetMaxHealth() then
-					NewEnt:SetNWBool("prop_recovering", false)
-					return
-				end            
+					if NewEnt:Health() >= NewEnt:GetMaxHealth() then
+						NewEnt:SetNWBool("prop_recovering", false)
+						return
+					end            
 
-				if NewEnt:Health() > NewEnt:GetMaxHealth() / 2 then
-					NewEnt:SetNWBool("prop_cracked", false)
-				end
+					if NewEnt:Health() > NewEnt:GetMaxHealth() / 2 then
+						NewEnt:SetNWBool("prop_cracked", false)
+					end
 
-				NewEnt:SetHealth(NewEnt:Health() + 1)
-			end)
+					NewEnt:SetHealth(NewEnt:Health() + 1)
+				end)
+			else
+				NewEnt:SetHealth(NewEnt:GetMaxHealth())
+			end
 		else
-			NewEnt:SetHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
+			NewEnt:SetHealth(NewEnt:GetMaxHealth())
 		end
 	
 		if Freeze then
