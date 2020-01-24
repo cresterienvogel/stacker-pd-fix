@@ -1,4 +1,4 @@
--- Fixed to work fine on Prop Destruction by crester
+-- Fixed to work fine on Prop Destruction
 
 TOOL.Category		= "Construction"
 TOOL.Name			= "#Tool.stacker.name"
@@ -89,39 +89,23 @@ function TOOL:LeftClick(trace)
 		NewEnt:SetAngles(NewAng)
 		NewEnt:Spawn()
 		
-		NewEnt:SetMaxHealth(NewEnt:massToStrength(NewEnt:GetPhysicsObject():GetMass()))
-
-		if GetConVar("props_recovering"):GetBool() then
-			if GetConVar("props_lowspawn"):GetBool() then
+		if PD then
+			NewEnt:SetMaxHealth(NewEnt:GetMaxStrength())
+		
+			if PD.Poor then
 				NewEnt:SetHealth(1)
-				NewEnt:SetNWBool("prop_recovering", true)
-
-				timer.Create("PropRecovery" .. NewEnt:EntIndex(), 1, 0, function()
+				timer.Simple(PD.RecoveringDelay, function()
 					if not IsValid(NewEnt) then
-						timer.Remove("PropRecovery" .. NewEnt:EntIndex())
-						return 
-					end
-
-					if not NewEnt:GetNWBool("prop_recovering") then
-						return 
-					end
-
-					if NewEnt:Health() >= NewEnt:GetMaxHealth() then
-						NewEnt:SetNWBool("prop_recovering", false)
 						return
-					end            
-
-					if NewEnt:Health() > NewEnt:GetMaxHealth() / 2 then
-						NewEnt:SetNWBool("prop_cracked", false)
 					end
-
-					NewEnt:SetHealth(NewEnt:Health() + 1)
+		
+					PD.CreateRecovery(NewEnt)
 				end)
 			else
-				NewEnt:SetHealth(NewEnt:GetMaxHealth())
+				NewEnt:SetHealth(ent:GetMaxHealth())
 			end
-		else
-			NewEnt:SetHealth(NewEnt:GetMaxHealth())
+			
+			PD.CreateStability(NewEnt)
 		end
 	
 		if Freeze then
