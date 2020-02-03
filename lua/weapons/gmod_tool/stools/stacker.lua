@@ -92,9 +92,9 @@ function TOOL:LeftClick(trace)
 		if PD then
 			NewEnt:SetMaxHealth(NewEnt:GetMaxStrength())
 		
-			if PD.Poor then
+			if GetConVar("pd_poor"):GetBool() then
 				NewEnt:SetHealth(1)
-				timer.Simple(PD.RecoveringDelay, function()
+				timer.Simple(3, function()
 					if not IsValid(NewEnt) then
 						return
 					end
