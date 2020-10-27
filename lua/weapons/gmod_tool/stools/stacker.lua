@@ -102,7 +102,7 @@ function TOOL:LeftClick(trace)
 					PD.CreateRecovery(NewEnt)
 				end)
 			else
-				NewEnt:SetHealth(ent:GetMaxHealth())
+				NewEnt:SetHealth(NewEnt:GetMaxHealth())
 			end
 			
 			PD.CreateStability(NewEnt)
